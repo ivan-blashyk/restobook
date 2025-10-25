@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Удаление ресторана - RestoBook</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">🍽 RestoBook</a>
+            <!-- Авторизация -->
+            <div class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                    <span class="navbar-text me-3">Привет, {{ user.username }}!</span>
+                    <a class="nav-link" href="{% url 'logout' %}">Выйти</a>
+                {% else %}
+                    <a class="nav-link" href="{% url 'login' %}">Войти</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="text-center text-danger">⚠️ Удаление ресторана</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                        <div class="messages mb-4">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <div class="alert alert-danger">
+                            <h4>Вы уверены, что хотите удалить ресторан?</h4>
+                            <p><strong>{{ restaurant.name }}</strong></p>
+                            <p class="mb-0">Это действие нельзя отменить. Будут удалены все связанные столики и бронирования.</p>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5>Информация о ресторане:</h5>
+                                <p><strong>Адрес:</strong> {{ restaurant.address }}</p>
+                                <p><strong>Телефон:</strong> {{ restaurant.phone }}</p>
+                                <p><strong>Тип кухни:</strong> {{ restaurant.get_cuisine_type_display }}</p>
+                                <p><strong>Столиков:</strong> {{ restaurant.table_set.count }}</p>
+                            </div>
+                        </div>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{% url 'restaurant_detail' restaurant.id %}" class="btn btn-secondary me-md-2">Отмена</a>
+                                <button type="submit" class="btn btn-danger">Да, удалить</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

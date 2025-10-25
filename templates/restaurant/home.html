@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RestoBook - Бронирование столиков</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .widget {
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card {
+            transition: transform 0.2s;
+            margin-bottom: 15px;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">🍽 RestoBook</a>
+            
+            <!-- Поиск -->
+            <form class="d-flex mx-3" method="GET" action="{% url 'search_restaurants' %}">
+                <input class="form-control me-2" type="search" name="q" placeholder="Поиск ресторанов..." aria-label="Search">
+                <button class="btn btn-outline-light" type="submit">Найти</button>
+            </form>
+
+                       <!-- Навигация -->
+            <div class="navbar-nav">
+                <a class="nav-link" href="{% url 'all_restaurants' %}">Все рестораны</a>
+                <!-- Кнопка добавления ресторана - ТОЛЬКО ДЛЯ STAFF -->
+                {% if user.is_staff %}
+                <a class="nav-link" href="{% url 'restaurant_create' %}">Добавить ресторан</a>
+                {% endif %}
+            </div>
+
+            <!-- Авторизация -->
+            <div class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                    <span class="navbar-text me-3">Привет, {{ user.username }}!</span>
+                    <a class="nav-link" href="{% url 'logout' %}">Выйти</a>
+                {% else %}
+                    <a class="nav-link" href="{% url 'login' %}">Войти</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Добро пожаловать в RestoBook!</h1>
+        <p class="text-center lead">Система бронирования столиков в ресторанах</p>
+            <!-- Результаты поиска -->
+    {% if search_results %}
+    <div class="container mt-4">
+        <div class="alert alert-info">
+            <h4>Результаты поиска для "{{ search_query }}"</h4>
+            <p>Найдено ресторанов: {{ search_results.count }}</p>
+        </div>
+        
+        <div class="row">
+            {% for restaurant in search_results %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ restaurant.name }}</h5>
+                        <p class="card-text">
+                            <strong>Кухня:</strong> {{ restaurant.get_cuisine_type_display }}<br>
+                            <strong>Адрес:</strong> {{ restaurant.address }}<br>
+                            <strong>Телефон:</strong> {{ restaurant.phone }}
+                        </p>
+                        <button class="btn btn-primary">Забронировать столик</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <hr class="my-5">
+    </div>
+    {% endif %}
+
+        <!-- Виджет 1: Популярные рестораны -->
+        <div class="widget">
+            <h2>🎯 Популярные рестораны этой недели</h2>
+            <div class="row">
+                {% for restaurant in popular_restaurants %}
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+    <a href="{% url 'restaurant_detail' restaurant.id %}" class="text-decoration-none">{{ restaurant.name }}</a>
+</h5>
+                            <p class="card-text">
+                                <strong>Кухня:</strong> {{ restaurant.get_cuisine_type_display }}<br>
+                                <strong>Бронирований:</strong> {{ restaurant.reservation_count }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-muted">Пока нет данных о популярных ресторанах</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Виджет 2: Свободные столики -->
+        <div class="widget">
+            <h2>🆓 Свободные столики на сегодня ({{ today }})</h2>
+            <div class="row">
+                {% for table in available_tables %}
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Столик {{ table.table_number }}</h5>
+                            <p class="card-text">
+                                <strong>Ресторан:</strong> {{ table.restaurant.name }}<br>
+                                <strong>Вместимость:</strong> {{ table.capacity }} чел.<br>
+                                <strong>Цена:</strong> {{ table.price_per_hour }} руб./час
+                            </p>
+                            <button class="btn btn-success">Забронировать</button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-muted">На сегодня все столики заняты</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Виджет 3: Все рестораны -->
+        <div class="widget">
+            <h2>🏪 Наши рестораны</h2>
+            <div class="row">
+                {% for restaurant in all_restaurants %}
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ restaurant.name }}</h5>
+                            <p class="card-text">
+                                <strong>Адрес:</strong> {{ restaurant.address }}<br>
+                                <strong>Телефон:</strong> {{ restaurant.phone }}<br>
+                                <strong>Часы работы:</strong> {{ restaurant.opening_hours }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-muted">Рестораны не добавлены</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+            <!-- Виджет 4: Рестораны с лучшими ценами -->
+        <div class="widget">
+            <h2>💰 Рестораны с лучшими ценами</h2>
+            <div class="row">
+                {% for restaurant in affordable_restaurants %}
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+    <a href="{% url 'restaurant_detail' restaurant.id %}" class="text-decoration-none">{{ restaurant.name }}</a>
+</h5>
+                            <p class="card-text">
+                                <strong>Кухня:</strong> {{ restaurant.get_cuisine_type_display }}<br>
+                                <strong>От:</strong> {{ restaurant.min_price }} руб./час<br>
+                                <strong>Адрес:</strong> {{ restaurant.address }}
+                            </p>
+                            <button class="btn btn-warning">Выбрать столик</button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-muted">Нет данных о ресторанах</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Виджет 5: Рестораны с большими столиками -->
+        <div class="widget">
+            <h2>👥 Рестораны для больших компаний</h2>
+            <div class="row">
+                {% for restaurant in large_tables_restaurants %}
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+    <a href="{% url 'restaurant_detail' restaurant.id %}" class="text-decoration-none">{{ restaurant.name }}</a>
+</h5>
+                            <p class="card-text">
+                                <strong>Кухня:</strong> {{ restaurant.get_cuisine_type_display }}<br>
+                                <strong>Вместимость:</strong> до {{ restaurant.max_capacity }} чел.<br>
+                                <strong>Телефон:</strong> {{ restaurant.phone }}
+                            </p>
+                            <button class="btn btn-info">Для компании</button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-muted">Нет ресторанов с большими столиками</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="widget">
+            <h2>📈 Статистика RestoBook</h2>
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h3>{{ stats.total_restaurants }}</h3>
+                            <p>Всего ресторанов</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h3>{{ stats.avg_table_price|floatformat:0 }}</h3>
+                            <p>Средняя цена (руб/час)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h3>{{ stats.max_capacity }}</h3>
+                            <p>Макс. вместимость</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h3>{{ stats.min_price }}</h3>
+                            <p>Мин. цена (руб/час)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
