@@ -20,6 +20,7 @@
                     <span class="navbar-text me-3">Привет, {{ user.username }}!</span>
                     <a class="nav-link" href="{% url 'logout' %}">Выйти</a>
                 {% else %}
+                    <a class="nav-link" href="{% url 'register' %}">📝 Регистрация</a>
                     <a class="nav-link" href="{% url 'login' %}">Войти</a>
                 {% endif %}
             </div>

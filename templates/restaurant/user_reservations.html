@@ -12,10 +12,14 @@
             <a class="navbar-brand" href="{% url 'home' %}">🍽 RestoBook</a>
             <div class="navbar-nav ms-auto">
                 <a class="nav-link" href="{% url 'all_restaurants' %}">Все рестораны</a>
+                {% if user.is_staff %}
+                <a class="nav-link" href="{% url 'restaurant_create' %}">Добавить ресторан</a>
+                {% endif %}
                 {% if user.is_authenticated %}
                     <span class="navbar-text me-3">Привет, {{ user.username }}!</span>
                     <a class="nav-link" href="{% url 'logout' %}">Выйти</a>
                 {% else %}
+                    <a class="nav-link" href="{% url 'register' %}">📝 Регистрация</a>
                     <a class="nav-link" href="{% url 'login' %}">Войти</a>
                 {% endif %}
             </div>

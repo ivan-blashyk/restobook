@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import date, timedelta, time
 from .models import Restaurant, Table, Reservation
-from .forms import RestaurantForm, ReservationForm
+from .forms import RestaurantForm, ReservationForm, CustomUserCreationForm
 
 def home(request):
     today = date.today()
@@ -198,6 +198,22 @@ def search_restaurants(request):
         'search_stats': search_stats,
     }
     return render(request, 'restaurant/search.html', context)
+
+def register(request):
+    """Регистрация нового пользователя"""
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, f'🎉 Добро пожаловать, {user.username}! Регистрация прошла успешно.')
+            return redirect('home')
+        else:
+            messages.error(request, '❌ Пожалуйста, исправьте ошибки в форме.')
+    else:
+        form = CustomUserCreationForm()
+    
+    return render(request, 'restaurant/register.html', {'form': form})
 
 def custom_login(request):
     """Кастомная страница входа"""
