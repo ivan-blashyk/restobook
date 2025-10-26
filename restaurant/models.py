@@ -87,6 +87,7 @@ class Reservation(models.Model):
     reservation_date = models.DateField()
     reservation_time = models.TimeField()
     guests_count = models.IntegerField()
+    special_requests = models.TextField(blank=True, verbose_name='Особые пожелания')  # ДОБАВЛЕНО ПОЛЕ
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(default=timezone.now)
 

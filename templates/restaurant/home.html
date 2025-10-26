@@ -24,7 +24,7 @@
     </style>
 </head>
 <body>
- <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="/">🍽 RestoBook</a>
             
@@ -34,7 +34,7 @@
                 <button class="btn btn-outline-light" type="submit">Найти</button>
             </form>
 
-                       <!-- Навигация -->
+            <!-- Навигация -->
             <div class="navbar-nav">
                 <a class="nav-link" href="{% url 'all_restaurants' %}">Все рестораны</a>
                 <!-- Кнопка добавления ресторана - ТОЛЬКО ДЛЯ STAFF -->
@@ -46,6 +46,7 @@
             <!-- Авторизация -->
             <div class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
+                    <a class="nav-link" href="{% url 'user_reservations' %}">📅 Мои бронирования</a>
                     <span class="navbar-text me-3">Привет, {{ user.username }}!</span>
                     <a class="nav-link" href="{% url 'logout' %}">Выйти</a>
                 {% else %}
@@ -55,10 +56,7 @@
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <h1 class="text-center mb-4">Добро пожаловать в RestoBook!</h1>
-        <p class="text-center lead">Система бронирования столиков в ресторанах</p>
-            <!-- Результаты поиска -->
+    <!-- Результаты поиска -->
     {% if search_results %}
     <div class="container mt-4">
         <div class="alert alert-info">
@@ -71,13 +69,15 @@
             <div class="col-md-4 mb-4">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">{{ restaurant.name }}</h5>
+                        <h5 class="card-title">
+                            <a href="{% url 'restaurant_detail' restaurant.id %}" class="text-decoration-none">{{ restaurant.name }}</a>
+                        </h5>
                         <p class="card-text">
                             <strong>Кухня:</strong> {{ restaurant.get_cuisine_type_display }}<br>
                             <strong>Адрес:</strong> {{ restaurant.address }}<br>
                             <strong>Телефон:</strong> {{ restaurant.phone }}
                         </p>
-                        <button class="btn btn-primary">Забронировать столик</button>
+                        <a href="{% url 'restaurant_detail' restaurant.id %}" class="btn btn-primary">Подробнее</a>
                     </div>
                 </div>
             </div>
@@ -86,6 +86,15 @@
         <hr class="my-5">
     </div>
     {% endif %}
+
+    <!-- Основной контент -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center mb-4">Добро пожаловать в RestoBook!</h1>
+                <p class="text-center lead">Система бронирования столиков в ресторанах</p>
+            </div>
+        </div>
 
         <!-- Виджет 1: Популярные рестораны -->
         <div class="widget">
@@ -96,12 +105,13 @@
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">
-    <a href="{% url 'restaurant_detail' restaurant.id %}" class="text-decoration-none">{{ restaurant.name }}</a>
-</h5>
+                                <a href="{% url 'restaurant_detail' restaurant.id %}" class="text-decoration-none">{{ restaurant.name }}</a>
+                            </h5>
                             <p class="card-text">
-                                <strong>Кухня:</strong> {{ restaurant.get_cuisine_type_display }}<br>
-                                <strong>Бронирований:</strong> {{ restaurant.reservation_count }}
+                                <small class="text-muted">{{ restaurant.get_cuisine_type_display }}</small><br>
+                                Бронирований: {{ restaurant.reservation_count }}
                             </p>
+                            <a href="{% url 'restaurant_detail' restaurant.id %}" class="btn btn-primary btn-sm">Подробнее</a>
                         </div>
                     </div>
                 </div>
@@ -123,11 +133,16 @@
                         <div class="card-body">
                             <h5 class="card-title">Столик {{ table.table_number }}</h5>
                             <p class="card-text">
-                                <strong>Ресторан:</strong> {{ table.restaurant.name }}<br>
-                                <strong>Вместимость:</strong> {{ table.capacity }} чел.<br>
-                                <strong>Цена:</strong> {{ table.price_per_hour }} руб./час
+                                Ресторан: {{ table.restaurant.name }}<br>
+                                Вместимость: {{ table.capacity }} чел.<br>
+                                Цена: {{ table.price_per_hour }} руб./час
                             </p>
-                            <button class="btn btn-success">Забронировать</button>
+                            <!-- Кнопка бронирования -->
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'make_reservation' table.id %}" class="btn btn-success">Забронировать</a>
+                            {% else %}
+                                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline-success">Войти для бронирования</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -139,32 +154,7 @@
             </div>
         </div>
 
-        <!-- Виджет 3: Все рестораны -->
-        <div class="widget">
-            <h2>🏪 Наши рестораны</h2>
-            <div class="row">
-                {% for restaurant in all_restaurants %}
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ restaurant.name }}</h5>
-                            <p class="card-text">
-                                <strong>Адрес:</strong> {{ restaurant.address }}<br>
-                                <strong>Телефон:</strong> {{ restaurant.phone }}<br>
-                                <strong>Часы работы:</strong> {{ restaurant.opening_hours }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="col-12">
-                    <p class="text-muted">Рестораны не добавлены</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-            <!-- Виджет 4: Рестораны с лучшими ценами -->
+        <!-- Виджет 3: Рестораны с лучшими ценами -->
         <div class="widget">
             <h2>💰 Рестораны с лучшими ценами</h2>
             <div class="row">
@@ -173,14 +163,14 @@
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">
-    <a href="{% url 'restaurant_detail' restaurant.id %}" class="text-decoration-none">{{ restaurant.name }}</a>
-</h5>
+                                <a href="{% url 'restaurant_detail' restaurant.id %}" class="text-decoration-none">{{ restaurant.name }}</a>
+                            </h5>
                             <p class="card-text">
                                 <strong>Кухня:</strong> {{ restaurant.get_cuisine_type_display }}<br>
                                 <strong>От:</strong> {{ restaurant.min_price }} руб./час<br>
                                 <strong>Адрес:</strong> {{ restaurant.address }}
                             </p>
-                            <button class="btn btn-warning">Выбрать столик</button>
+                            <a href="{% url 'restaurant_detail' restaurant.id %}" class="btn btn-warning btn-sm">Выбрать столик</a>
                         </div>
                     </div>
                 </div>
@@ -192,7 +182,7 @@
             </div>
         </div>
 
-        <!-- Виджет 5: Рестораны с большими столиками -->
+        <!-- Виджет 4: Рестораны с большими столиками -->
         <div class="widget">
             <h2>👥 Рестораны для больших компаний</h2>
             <div class="row">
@@ -201,14 +191,14 @@
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">
-    <a href="{% url 'restaurant_detail' restaurant.id %}" class="text-decoration-none">{{ restaurant.name }}</a>
-</h5>
+                                <a href="{% url 'restaurant_detail' restaurant.id %}" class="text-decoration-none">{{ restaurant.name }}</a>
+                            </h5>
                             <p class="card-text">
                                 <strong>Кухня:</strong> {{ restaurant.get_cuisine_type_display }}<br>
                                 <strong>Вместимость:</strong> до {{ restaurant.max_capacity }} чел.<br>
                                 <strong>Телефон:</strong> {{ restaurant.phone }}
                             </p>
-                            <button class="btn btn-info">Для компании</button>
+                            <a href="{% url 'restaurant_detail' restaurant.id %}" class="btn btn-info btn-sm">Для компании</a>
                         </div>
                     </div>
                 </div>
@@ -258,6 +248,7 @@
                 </div>
             </div>
         </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

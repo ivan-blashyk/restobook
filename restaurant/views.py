@@ -4,9 +4,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
-from datetime import date, timedelta
+from django.utils import timezone
+from datetime import date, timedelta, time
 from .models import Restaurant, Table, Reservation
-from .forms import RestaurantForm
+from .forms import RestaurantForm, ReservationForm
 
 def home(request):
     today = date.today()
@@ -209,7 +210,12 @@ def custom_login(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f'Добро пожаловать, {username}!')
-                return redirect('home')
+                
+                # Перенаправление на следующую страницу или на главную
+                next_url = request.GET.get('next', 'home')
+                return redirect(next_url)
+        else:
+            messages.error(request, '❌ Неверное имя пользователя или пароль.')
     else:
         form = AuthenticationForm()
     
@@ -220,6 +226,75 @@ def custom_logout(request):
     logout(request)
     messages.success(request, 'Вы успешно вышли из системы.')
     return redirect('home')
+
+@login_required
+def make_reservation(request, table_id):
+    """Создание бронирования столика"""
+    table = get_object_or_404(Table, id=table_id)
+    
+    if request.method == 'POST':
+        form = ReservationForm(request.POST)
+        if form.is_valid():
+            reservation = form.save(commit=False)
+            reservation.user = request.user
+            reservation.table = table
+            
+            # Проверяем доступность столика
+            conflicting_reservations = Reservation.objects.filter(
+                table=table,
+                reservation_date=reservation.reservation_date,
+                reservation_time=reservation.reservation_time,
+                status__in=['confirmed', 'pending']
+            )
+            
+            if conflicting_reservations.exists():
+                messages.error(request, '❌ Этот столик уже забронирован на выбранное время')
+            elif reservation.guests_count > table.capacity:
+                messages.error(request, f'❌ Столик вмещает только {table.capacity} гостей')
+            else:
+                reservation.save()
+                messages.success(request, f'✅ Столик успешно забронирован на {reservation.reservation_date} в {reservation.reservation_time}')
+                return redirect('restaurant_detail', restaurant_id=table.restaurant.id)
+    else:
+        # Устанавливаем минимальную дату - сегодня
+        initial_data = {
+            'reservation_date': timezone.now().date(),
+            'guests_count': 2
+        }
+        form = ReservationForm(initial=initial_data)
+    
+    context = {
+        'form': form,
+        'table': table,
+        'restaurant': table.restaurant
+    }
+    return render(request, 'restaurant/make_reservation.html', context)
+
+@login_required
+def user_reservations(request):
+    """Страница с бронированиями пользователя"""
+    reservations = Reservation.objects.filter(user=request.user).order_by('-reservation_date', '-reservation_time')
+    
+    context = {
+        'reservations': reservations
+    }
+    return render(request, 'restaurant/user_reservations.html', context)
+
+@login_required
+def cancel_reservation(request, reservation_id):
+    """Отмена бронирования"""
+    reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
+    
+    if request.method == 'POST':
+        reservation.status = 'cancelled'
+        reservation.save()
+        messages.success(request, '✅ Бронирование отменено')
+        return redirect('user_reservations')
+    
+    context = {
+        'reservation': reservation
+    }
+    return render(request, 'restaurant/cancel_reservation.html', context)
 
 def demo_page(request):
     """Демонстрационная страница"""

@@ -16,6 +16,7 @@
                 <a class="nav-link" href="{% url 'restaurant_create' %}">Добавить ресторан</a>
                 {% endif %}
                 {% if user.is_authenticated %}
+                    <a class="nav-link" href="{% url 'user_reservations' %}">📅 Мои бронирования</a>
                     <span class="navbar-text me-3">Привет, {{ user.username }}!</span>
                     <a class="nav-link" href="{% url 'logout' %}">Выйти</a>
                 {% else %}
@@ -99,7 +100,12 @@
                                     <strong>Вместимость:</strong> {{ table.capacity }} чел.<br>
                                     <strong>Цена:</strong> {{ table.price_per_hour }} руб./час
                                 </p>
-                                <button class="btn btn-success">Забронировать</button>
+                                <!-- Кнопка бронирования -->
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'make_reservation' table.id %}" class="btn btn-success">Забронировать</a>
+                                {% else %}
+                                    <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-outline-success">Войти для бронирования</a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

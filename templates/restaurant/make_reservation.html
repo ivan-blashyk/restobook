@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бронирование столика - RestoBook</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">🍽 RestoBook</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{% url 'restaurant_detail' restaurant.id %}">Назад к ресторану</a>
+                {% if user.is_authenticated %}
+                    <span class="navbar-text me-3">Привет, {{ user.username }}!</span>
+                    <a class="nav-link" href="{% url 'logout' %}">Выйти</a>
+                {% else %}
+                    <a class="nav-link" href="{% url 'login' %}">Войти</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h3 class="text-center">🎯 Бронирование столика</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Информация о столике -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5>Информация о столике:</h5>
+                                <p><strong>Ресторан:</strong> {{ restaurant.name }}</p>
+                                <p><strong>Столик:</strong> {{ table.table_number }}</p>
+                                <p><strong>Вместимость:</strong> до {{ table.capacity }} гостей</p>
+                                <p><strong>Цена:</strong> {{ table.price_per_hour }} руб./час</p>
+                            </div>
+                        </div>
+
+                        {% if messages %}
+                        <div class="messages mb-4">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            {% for field in form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% if field.errors %}
+                                <div class="alert alert-danger mt-1">
+                                    {{ field.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{% url 'restaurant_detail' restaurant.id %}" class="btn btn-secondary me-md-2">Отмена</a>
+                                <button type="submit" class="btn btn-success">Забронировать</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
