@@ -64,7 +64,7 @@ def home(request):
         'search_query': search_query,
         'today': today,
     }
-    return render(request, 'restaurant/home.html', context)
+    return render(request, 'restaurant/index.html', context)
 
 def restaurant_detail(request, restaurant_id):
     """Страница конкретного ресторана"""
