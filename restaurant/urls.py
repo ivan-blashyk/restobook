@@ -1,10 +1,17 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
+from .views_api import RestaurantViewSet, TableViewSet, ReservationViewSet
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'api/restaurants', RestaurantViewSet)
+router.register(r'api/tables', TableViewSet)
+router.register(r'api/reservations', ReservationViewSet)
 
 urlpatterns = [
     path('', views.home, name='home'),
     path('demo/', views.demo_page, name='demo'),
-    path('register/', views.register, name='register'),  # ДОБАВЛЕНО
+    path('register/', views.register, name='register'),
     path('login/', views.custom_login, name='login'),
     path('logout/', views.custom_logout, name='logout'),
     path('search/', views.search_restaurants, name='search_restaurants'),
@@ -16,4 +23,4 @@ urlpatterns = [
     path('reservations/', views.user_reservations, name='user_reservations'),
     path('reservations/<int:table_id>/book/', views.make_reservation, name='make_reservation'),
     path('reservations/<int:reservation_id>/cancel/', views.cancel_reservation, name='cancel_reservation'),
-]
+] + router.urls

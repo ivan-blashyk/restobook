@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.db.models import F, Q
+from simple_history.models import HistoricalRecords  # ✅ ДОБАВЛЕНО
 
 class AvailableTableManager(models.Manager):
     """Кастомный менеджер для доступных столиков"""
@@ -51,6 +52,9 @@ class Restaurant(models.Model):
     
     # ManyToMany связь с тегами
     tags = models.ManyToManyField(Tag, blank=True, related_name='restaurants', verbose_name=_('теги'))
+    
+    # ✅ ДОБАВЛЕНО: История изменений
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = _('ресторан')
@@ -106,6 +110,9 @@ class Table(models.Model):
 
     objects = models.Manager()
     available = AvailableTableManager()
+    
+    # ✅ ДОБАВЛЕНО: История изменений
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = _('столик')
@@ -133,6 +140,9 @@ class Reservation(models.Model):
     special_requests = models.TextField(blank=True, verbose_name=_('особые пожелания'))
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name=_('статус'))
     created_at = models.DateTimeField(default=timezone.now, verbose_name=_('дата создания'))
+    
+    # ✅ ДОБАВЛЕНО: История изменений
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = _('бронирование')

@@ -1,0 +1,13 @@
+.restaurant-form {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.restaurant-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.restaurant-form .image-preview {
+    max-width: 200px;
+    margin-top: 10px;
+}
