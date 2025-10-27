@@ -69,7 +69,7 @@ class Restaurant(models.Model):
             table__restaurant=self,
             reservation_date=date,
             status__in=['confirmed', 'pending']
-        ).values_list('table_id', flat=True)
+        ).values_list('table_id', flat=True) 
         
         return self.tables.exclude(id__in=busy_tables).filter(capacity__gte=guests_count)
     
