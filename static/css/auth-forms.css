@@ -1,0 +1,8 @@
+.auth-form {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.auth-form .form-group {
+    margin-bottom: 1rem;
+}

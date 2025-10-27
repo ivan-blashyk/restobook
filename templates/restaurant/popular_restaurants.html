@@ -1,0 +1,14 @@
+<!-- ✅ Шаблон для inclusion tag -->
+<div class="popular-restaurants-widget">
+    <h6>🔥 Популярные рестораны</h6>
+    {% for restaurant in restaurants %}
+    <div class="popular-item mb-2 p-2 border rounded">
+        <small>
+            <strong>{{ restaurant.name }}</strong><br>
+            <span class="text-muted">{{ restaurant.reservation_count }} броней</span>
+        </small>
+    </div>
+    {% empty %}
+    <small class="text-muted">Нет данных о популярности</small>
+    {% endfor %}
+</div>

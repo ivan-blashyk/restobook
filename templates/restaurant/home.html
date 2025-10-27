@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load restaurant_extras %}  <!-- ✅ ЗАГРУЗКА ШАБЛОННЫХ ТЕГОВ -->
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -214,6 +215,42 @@
                 {% endfor %}
             </div>
         </div>
+        
+        <!-- ✅ Использование шаблонных тегов -->
+<div class="widget">
+    <h2>📊 Дополнительная информация</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Текущее время</h6>
+                    <p class="card-text">{% current_time "%d.%m.%Y %H:%M" %}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Ваши бронирования</h6>
+                    <p class="card-text">{% user_reservation_count %} активных броней</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Форматирование телефона</h6>
+                    <p class="card-text">{{ "+79991234567"|format_phone }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ✅ Inclusion tag -->
+    <div class="mt-4">
+        {% show_popular_restaurants 3 %}
+    </div>
+</div>
 
         <!-- Статистика -->
         <div class="widget">
