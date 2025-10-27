@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.db.models import F, Q
-from simple_history.models import HistoricalRecords  # ✅ ДОБАВЛЕНО
+from simple_history.models import HistoricalRecords  # история 
 
 class AvailableTableManager(models.Manager):
     """Кастомный менеджер для доступных столиков"""
